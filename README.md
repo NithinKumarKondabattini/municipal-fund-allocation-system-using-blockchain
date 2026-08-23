@@ -1,5 +1,7 @@
 # Municipal Fund Allocation System Using Blockchain
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NithinKumarKondabattini/municipal-fund-allocation-system-using-blockchain)
+
 A student-ready full-stack project that makes municipal allocations, spending approvals, document proofs and public project data transparent. Financial values are stored as integer **paise**; blockchain gas is never treated as municipal money.
 
 ## Included modules

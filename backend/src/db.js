@@ -1,8 +1,10 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
-const dataDir=path.resolve('data'); fs.mkdirSync(dataDir,{recursive:true});
-export const db=new Database(process.env.DATABASE_FILE||path.join(dataDir,'municipal.db'));
+const databaseFile=path.resolve(process.env.DATABASE_FILE||path.join('data','municipal.db'));
+// This also creates backend/data on a managed host when DATABASE_FILE is supplied.
+fs.mkdirSync(path.dirname(databaseFile),{recursive:true});
+export const db=new Database(databaseFile);
 db.pragma('foreign_keys = ON');
 db.exec(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,passwordHash TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('ADMIN','OFFICER','AUDITOR','CITIZEN')),createdAt TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS projects(id INTEGER PRIMARY KEY AUTOINCREMENT,projectName TEXT NOT NULL,description TEXT,category TEXT,location TEXT,startDate TEXT,expectedEndDate TEXT,totalBudget INTEGER NOT NULL,allocatedAmount INTEGER DEFAULT 0,spentAmount INTEGER DEFAULT 0,progress INTEGER DEFAULT 0,status TEXT DEFAULT 'Planning',createdBy INTEGER,assignedOfficer INTEGER,FOREIGN KEY(createdBy) REFERENCES users(id));
