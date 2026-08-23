@@ -1,4 +1,4 @@
-import 'dotenv/config'; import express from 'express'; import cors from 'cors'; import helmet from 'helmet'; import rateLimit from 'express-rate-limit'; import bcrypt from 'bcryptjs'; import multer from 'multer'; import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto';
+import 'dotenv/config'; import express from 'express'; import cors from 'cors'; import helmet from 'helmet'; import rateLimit from 'express-rate-limit'; import bcrypt from 'bcryptjs'; import multer from 'multer'; import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto'; import {fileURLToPath} from 'node:url';
 import {db,log} from './db.js'; import {authenticate,allow,issue} from './auth.js';
 const app=express(), port=process.env.PORT||4000, uploadDir=path.resolve(process.env.UPLOAD_DIR||'uploads'); fs.mkdirSync(uploadDir,{recursive:true});
 app.use(helmet({crossOriginResourcePolicy:false}));app.use(cors());app.use(express.json());app.use(rateLimit({windowMs:60000,max:180}));app.use('/uploads',express.static(uploadDir));
@@ -23,4 +23,9 @@ app.get('/api/dashboard',authenticate,(q,s)=>{const ps=db.prepare('SELECT * FROM
 app.get('/api/alerts',authenticate,(q,s)=>s.json(db.prepare('SELECT a.*,p.projectName FROM alerts a LEFT JOIN projects p ON p.id=a.projectId WHERE (?=\'\' OR a.severity=?) ORDER BY a.id DESC').all(q.query.severity||'',q.query.severity||'')));app.patch('/api/alerts/:id',authenticate,allow('ADMIN','AUDITOR'),(q,s)=>{db.prepare("UPDATE alerts SET status='RESOLVED' WHERE id=?").run(q.params.id);s.json({ok:true})});
 app.get('/api/audit',authenticate,allow('ADMIN','AUDITOR'),(q,s)=>s.json(db.prepare('SELECT a.*,u.name,u.role FROM audit_logs a LEFT JOIN users u ON u.id=a.userId ORDER BY a.id DESC').all()));app.get('/api/blockchain/verify/:hash',authenticate,allow('ADMIN','AUDITOR'),(q,s)=>{const t=db.prepare('SELECT * FROM fund_transactions WHERE blockchainHash=?').get(q.params.hash);s.json({verified:!!t,mode:'local immutable-proof fallback',record:t||null})});
 app.post('/api/feedback',(q,s)=>{const x=q.body;if(!x.projectId||!x.message)return s.status(400).json({error:'Project and message required'});const id=db.prepare('INSERT INTO citizen_feedback(projectId,citizenName,message,category) VALUES(?,?,?,?)').run(x.projectId,x.citizenName||null,x.message,x.category||'General').lastInsertRowid;s.status(201).json({id})});
-app.use((e,q,s,n)=>s.status(400).json({error:e.message||'Request failed'}));app.listen(port,()=>console.log(`API listening on ${port}`));
+app.use((e,q,s,n)=>s.status(400).json({error:e.message||'Request failed'}));
+// A single production service serves the built React site and API together. This avoids a CORS
+// dependency and is suitable for simple Render/Railway deployments without Docker.
+const here=path.dirname(fileURLToPath(import.meta.url)), site=path.resolve(here,'../../frontend/dist');
+if(fs.existsSync(site)){app.use(express.static(site));app.get('*',(req,res)=>res.sendFile(path.join(site,'index.html')))}
+app.listen(port,()=>console.log(`Municipal Fund app listening on ${port}`));

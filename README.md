@@ -34,7 +34,7 @@ pip install -r ai-service\requirements.txt
 uvicorn main:app --app-dir ai-service --reload
 ```
 
-Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). Demo password for every account is `Demo@123`:
+Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). For local Vite development, set `VITE_API_URL=http://localhost:4000/api` in `frontend/.env.local`. Production is a single Express site, so it uses `/api` automatically. Demo password for every account is `Demo@123`:
 
 | Role | Email |
 | --- | --- |
@@ -83,3 +83,11 @@ sudo certbot --nginx -d example.gov.in
 ```
 
 The deploy workflow requires `DEPLOY_HOST`, `DEPLOY_USER`, and `DEPLOY_KEY` GitHub secrets. It invokes `devops/deploy.sh` on every push to `main`.
+
+### Create a public demo link with Render
+
+1. Sign in to [Render](https://render.com), select **New → Blueprint**, and select this GitHub repository.
+2. Render reads `render.yaml`, builds the React app, seeds SQLite, and starts the combined Express website.
+3. Open the `onrender.com` URL Render shows after the deployment becomes **Live**.
+
+The free service is appropriate for a final-year demonstration but its local SQLite/upload data is ephemeral when the service is restarted. Use Render Postgres and object storage for production persistence.
