@@ -1,0 +1,8 @@
+[Unit]
+Description=Municipal AI Risk Service
+[Service]
+WorkingDirectory=/opt/municipal-fund/ai-service
+ExecStart=/opt/municipal-fund/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+[Install]
+WantedBy=multi-user.target

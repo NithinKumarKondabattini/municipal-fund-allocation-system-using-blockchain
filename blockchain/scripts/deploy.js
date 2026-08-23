@@ -1,0 +1,1 @@
+async function main(){const C=await ethers.getContractFactory('MunicipalLedger'),c=await C.deploy();await c.waitForDeployment();console.log('MunicipalLedger:',await c.getAddress())}main().catch(e=>{console.error(e);process.exitCode=1});

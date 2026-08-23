@@ -1,0 +1,1 @@
+const{expect}=require('chai');describe('MunicipalLedger',function(){it('records immutable proof',async function(){const C=await ethers.getContractFactory('MunicipalLedger'),c=await C.deploy();await expect(c.recordProject(1,'sha256')).to.emit(c,'ProofRecorded')})})
