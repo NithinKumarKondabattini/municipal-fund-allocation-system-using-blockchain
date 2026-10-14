@@ -6,13 +6,14 @@ A student-ready full-stack project that makes municipal allocations, spending ap
 
 ## Included modules
 
-- React/Vite public transparency portal and staff dashboard
+- React/Vite public transparency portal, project dossiers, works locator and staff dashboard
 - Express API with JWT, bcrypt, role checks, validation, Helmet, rate limiting, SQLite persistence and audit logs
 - Admin allocation/approval workflow, officer expenditure submission and citizen feedback
 - SHA-256 document storage and tamper verification (local fallback; metadata is ready for IPFS CID)
 - FastAPI + genuine Isolation Forest risk endpoint
 - Solidity `MunicipalLedger` contract for compact immutable event proofs
-- Demo seed data for Warangal, Hanamkonda, Kazipet and Narsampet projects
+- Demo seed data for Warangal, Hanamkonda, Kazipet and Narsampet projects: contractor, tender, work-order, material, quality and public-contact records
+- Five complete public project dossiers with 100 approved payments and unique proof IDs per project
 - GitHub Actions, Nginx, PM2 and systemd deployment examples (no Docker)
 
 ## Quick start in VS Code
@@ -45,6 +46,27 @@ Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). For l
 | Auditor | auditor@municipal.gov.in |
 | Citizen | citizen@example.com |
 
+## Public website routes
+
+| Area | Local route |
+| --- | --- |
+| Public works directory | http://127.0.0.1:5173/#/ |
+| Visual works locator | http://127.0.0.1:5173/#/works-map |
+| Platform and team | http://127.0.0.1:5173/#/about |
+| Staff login | http://127.0.0.1:5173/#/login |
+| Admin control tower | http://127.0.0.1:5173/#/dashboard/overview |
+
+Each public dossier includes project identity, sanctioned/released/used funds, construction progress, milestone tracker, Google Maps worksite link, contractor and tender details, material quantities, quality status, 100 payment rows, printable disclosure and citizen feedback.
+
+## Project team
+
+| Contributor | Focus |
+| --- | --- |
+| [Nithin Kumar Kondabattini](https://github.com/NithinKumarKondabattini) | Project lead |
+| [Chandan Singh](https://github.com/BATTI-CHANDAN-SINGH) | Blockchain and backend |
+| [Sabir Mohammed](https://github.com/sabirmohammed123) | Data and integration |
+| [Harshitha Ganta](https://github.com/HarshithaGanta) | Research and quality |
+
 ## Blockchain local development
 
 ```powershell
@@ -58,14 +80,14 @@ The API currently always remains usable with a clearly labelled `LOCAL-*` immuta
 
 ## API overview
 
-- `POST /api/auth/register`, `POST /api/auth/login`
+- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
 - `GET|POST /api/projects`; `POST /api/projects/:id/allocate`
 - `GET|POST /api/transactions`; `PATCH /api/transactions/:id/decision`
 - `POST /api/documents`; `POST /api/documents/:id/verify`
 - `GET /api/dashboard`, `/api/alerts`, `/api/audit`, `/api/blockchain/verify/:hash`
 - `POST /api/feedback`
 
-Protected requests use `Authorization: Bearer <JWT>`. Admin can create/allocate/approve; officers submit spending only for assigned projects; auditors have audit/verification access. The SQLite schema is created automatically at API start.
+Protected requests use `Authorization: Bearer <JWT>`. Public registration creates **citizen** accounts only; an admin provisions staff roles. Admin can create/allocate/approve; officers submit spending only for assigned projects; auditors have audit/verification access. The SQLite schema is created automatically at API start.
 
 ## Tests and build
 
