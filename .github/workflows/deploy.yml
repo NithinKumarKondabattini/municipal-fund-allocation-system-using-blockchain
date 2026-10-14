@@ -1,5 +1,9 @@
 name: Deploy
-on: {push: {branches: [main]}}
+# A VPS deployment requires DEPLOY_HOST, DEPLOY_USER and DEPLOY_KEY secrets.
+# Keep it manual so a missing private server configuration never makes a
+# normal GitHub Pages release appear as failed.
+on:
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
