@@ -4,6 +4,100 @@
 
 A student-ready full-stack project that makes municipal allocations, spending approvals, document proofs and public project data transparent. Financial values are stored as integer **paise**; blockchain gas is never treated as municipal money.
 
+## What the system does
+
+CivicLedger is a municipal construction-finance transparency platform. It manages the journey from an approved project budget to expenditure approval, audit evidence and citizen-facing disclosure.
+
+The site is deliberately split into two experiences:
+
+1. **Public transparency portal** — no account needed. Citizens can inspect municipal works, budget use, delivery progress, contractors, materials, payment proof references and feedback.
+2. **Secure staff workspace** — role-based login for administration, officers and auditors. Staff can create projects, allocate funds, submit expenditure, approve or reject payments, review risk information, inspect audit events and verify documents.
+
+## Website guide
+
+### Public portal
+
+| Page | What visitors can do |
+| --- | --- |
+| **Projects** | Search municipal works by name, ward, area, contractor or category. Each card shows construction status, released funds, used funds, delivery percentage and required balance. |
+| **Full project dossier** | Select Open full project dossier on any project card. The detailed record shows the project code, location, sanctioned/released/used funds, milestones, map, contractor, materials, payment ledger and feedback form. |
+| **Works map** | Browse the visual municipal worksite locator. Select a map marker or worksite index item to open the relevant project dossier. Google Maps links open a location search for route planning. |
+| **About** | Read the platform purpose, technical capabilities, developer disclosure and project-team links. |
+
+### What is inside every project dossier
+
+Every seeded public project record includes:
+
+- A unique municipal project code, location, ward, department and public contact.
+- Sanctioned budget, allocation released, expenditure certified, remaining requirement and financial utilisation.
+- Construction progress, expected completion, delivery-milestone monitor and printable disclosure button.
+- Contractor name, GSTIN, tender reference and work-order reference.
+- Material schedule: material name, specification, supplier, planned quantity, used quantity and quality status.
+- Embedded map preview plus a direct Google Maps location link.
+- The first 100 approved expenditure records with transaction code, payment purpose, amount, date and unique development-proof ID.
+- Citizen feedback form, which saves feedback for municipal review.
+
+### Secure staff workspace
+
+| Workspace page | Function |
+| --- | --- |
+| **Overview** | Control-tower KPIs, allocation-versus-spend chart, project-health watchlist, compliance queue, variance view and recent ledger entries. |
+| **Project registry** | Create governed project records and view the complete municipal portfolio. |
+| **Approval queue** | Review pending expenditure submissions and approve or reject them. |
+| **Users & access** | Admin-only staff role management and account access control. |
+| **Alerts** | Review and resolve risk/compliance alerts. |
+| **Reports** | Portfolio reporting and CSV export. |
+| **Audit trail** | Auditor/Admin view of recorded system actions and proof references. |
+| **Documents** | Upload document evidence and run SHA-256 integrity verification. |
+| **Submit expenditure** | Officer workflow for creating an expenditure request for approval. |
+
+## Roles and permissions
+
+| Role | Main permissions |
+| --- | --- |
+| **Admin** | Project setup, fund allocation, user administration, transaction approval/rejection, alerts, reports and audit oversight. |
+| **Municipal Officer** | View assigned projects and submit expenditure requests for approval. |
+| **Auditor** | Review audit events, documents, proof references, alerts and reports. |
+| **Citizen** | Browse published work records and send project feedback. |
+
+Role enforcement is implemented in the Express API using JWT authentication and server-side role checks. The public portal does not expose staff-only endpoints.
+
+## Demo data and project records
+
+The seed script creates five detailed Greater Warangal municipal work packages:
+
+| Project code | Work package | Delivery partner | Transactions |
+| --- | --- | --- | ---: |
+| MUN-2026-0001 | Warangal Smart Road Corridor | Telangana Infra Works Pvt. Ltd. | 100 |
+| MUN-2026-0002 | Smart LED Street Lighting Programme | Deccan Lighting Systems LLP | 100 |
+| MUN-2026-0003 | Kazipet Water Supply Improvement | Godavari Water Projects Ltd. | 100 |
+| MUN-2026-0004 | Public Park & Open Space Renewal | Greenfield Urban Spaces Pvt. Ltd. | 100 |
+| MUN-2026-0005 | Narsampet Drainage Resilience Works | Kakatiya Civil Engineering Co. | 100 |
+
+Each record also has three construction-material entries, procurement information and unique LOCAL-DEV-PROOF evidence references. There are **500 approved demo transactions** in total.
+
+## Architecture
+
+Citizen / Admin / Officer / Auditor
+
+↓
+
+React + Vite public and staff UI
+
+↓
+
+Express REST API + JWT
+
+↓
+
+SQLite + audit records | FastAPI AI risk service | SHA-256 documents/IPFS fallback | Solidity/Hardhat ledger proof
+
+### Important development disclosure
+
+The Solidity MunicipalLedger contract is included and tested through Hardhat. The running local website remains usable without a blockchain node by writing clearly marked LOCAL-DEV-PROOF references. These are development proof IDs, not public-blockchain transaction hashes. Connect a deployed contract using an Ethers adapter before claiming on-chain production verification.
+
+Document upload uses SHA-256 integrity checks and local fallback storage. IPFS CID fields are ready for a configured IPFS provider but the demo does not pretend local files are already stored on a public IPFS network.
+
 ## Included modules
 
 - React/Vite public transparency portal, project dossiers, works locator and staff dashboard
@@ -89,6 +183,19 @@ The API currently always remains usable with a clearly labelled `LOCAL-*` immuta
 
 Protected requests use `Authorization: Bearer <JWT>`. Public registration creates **citizen** accounts only; an admin provisions staff roles. Admin can create/allocate/approve; officers submit spending only for assigned projects; auditors have audit/verification access. The SQLite schema is created automatically at API start.
 
+### Useful API calls during development
+
+| Endpoint | Purpose |
+| --- | --- |
+| GET /api/health | Service health check. |
+| GET /api/projects | Public project register. |
+| GET /api/projects/:id | Full public project dossier, materials and approved transactions. |
+| POST /api/auth/login | Staff login returning JWT and role data. |
+| GET /api/dashboard | Authenticated dashboard portfolio metrics. |
+| GET /api/transactions | Authenticated transaction list. |
+| GET /api/audit | Protected audit events. |
+| GET /api/blockchain/verify/:hash | Verify a stored proof reference. |
+
 ## Tests and build
 
 ```powershell
@@ -115,3 +222,11 @@ The deploy workflow requires `DEPLOY_HOST`, `DEPLOY_USER`, and `DEPLOY_KEY` GitH
 3. Open the `onrender.com` URL Render shows after the deployment becomes **Live**.
 
 The free service is appropriate for a final-year demonstration but its local SQLite/upload data is ephemeral when the service is restarted. Use Render Postgres and object storage for production persistence.
+
+### GitHub Pages demo
+
+The GitHub Pages workflow publishes the static public interface after every push to main:
+
+https://nithinkumarkondabattini.github.io/municipal-fund-allocation-system-using-blockchain/
+
+GitHub Pages cannot run Node.js, Python, SQLite, IPFS or Hardhat services. The public static build is useful for showing the interface; use Render, a VPS with PM2/Nginx, or another Node-capable host for the complete live API, AI, documents and staff workflows.
