@@ -43,7 +43,7 @@ Every seeded public project record includes:
 | --- | --- |
 | **Overview** | Control-tower KPIs, allocation-versus-spend chart, project-health watchlist, compliance queue, variance view and recent ledger entries. |
 | **Project registry** | Create governed project records and view the complete municipal portfolio. |
-| **Approval queue** | Review pending expenditure submissions and approve or reject them. |
+| **Fund approval queue** | Municipal Officer reviews pending expenditure submissions and approves or rejects them. |
 | **Users & access** | Admin-only staff role management and account access control. |
 | **Alerts** | Review and resolve risk/compliance alerts. |
 | **Reports** | Portfolio reporting and CSV export. |
@@ -55,9 +55,9 @@ Every seeded public project record includes:
 
 | Role | Main permissions |
 | --- | --- |
-| **Admin** | Project setup, fund allocation, user administration, transaction approval/rejection, alerts, reports and audit oversight. |
-| **Municipal Officer** | View assigned projects and submit expenditure requests for approval. |
-| **Auditor** | Review audit events, documents, proof references, alerts and reports. |
+| **Admin** | Project setup, fund allocation, user administration, alerts, reports and audit oversight. |
+| **Municipal Officer** | View assigned projects, submit expenditure records, and approve or reject fund requests. |
+| **Auditor** | Review audit events, document hashes, material quantities, unit rates, proof references, alerts and reports. |
 | **Citizen** | Browse published work records and send project feedback. |
 
 Role enforcement is implemented in the Express API using JWT authentication and server-side role checks. The public portal does not expose staff-only endpoints.
@@ -66,16 +66,16 @@ Role enforcement is implemented in the Express API using JWT authentication and 
 
 | Account | Workspace behavior |
 | --- | --- |
-| **Admin** | Creates municipal projects, assigns a Municipal Officer, releases project funds, approves or rejects expenditure requests, manages roles, resolves alerts and runs reports. |
-| **Municipal Officer** | Sees only assigned work packages and their financial records, updates physical work progress, submits expenditure with vendor and invoice-purpose details, then tracks approval status. |
-| **Auditor** | Reviews approved expenditure, risk levels, document-hash status, audit events, alert evidence and local proof references without changing municipal funds. |
+| **Admin** | Creates municipal projects, assigns a Municipal Officer, releases project funds, manages roles, resolves alerts and runs reports. |
+| **Municipal Officer** | Sees assigned work packages, updates physical work progress, submits expenditure with vendor and invoice-purpose details, and approves or rejects requests from the fund approval queue. |
+| **Auditor** | Reviews approved expenditure, risk levels, document hashes, audit events, material quantities, unit rates, quality status, alerts and ledger references without changing municipal funds. |
 | **Citizen** | Reads the public work register, construction progress, contractor and material records, approved payment ledger, proof references and notifications. |
 
-The seeded local database includes five assigned projects, 500 approved expenditure records, three pending officer requests and three open review alerts so every workspace has meaningful records on first run.
+The seeded database includes 12 municipal work packages, 12 principal contractors, 36 material schedules, 1,200 approved expenditure records, three pending review requests and three open compliance alerts so every workspace has meaningful records on first run.
 
-## Demo data and project records
+## Initial municipal register
 
-The seed script creates five detailed Greater Warangal municipal work packages:
+The seed script creates 12 detailed Greater Warangal municipal work packages. The first five are:
 
 | Project code | Work package | Delivery partner | Transactions |
 | --- | --- | --- | ---: |
@@ -85,7 +85,7 @@ The seed script creates five detailed Greater Warangal municipal work packages:
 | MUN-2026-0004 | Public Park & Open Space Renewal | Greenfield Urban Spaces Pvt. Ltd. | 100 |
 | MUN-2026-0005 | Narsampet Drainage Resilience Works | Kakatiya Civil Engineering Co. | 100 |
 
-Each record also has three construction-material entries, procurement information and unique LOCAL-DEV-PROOF evidence references. There are **500 approved demo transactions** in total.
+Each record also has three construction-material entries, procurement information and a unique SHA-256 ledger evidence ID. There are **1,200 approved transactions** in total.
 
 ## Architecture
 
@@ -107,7 +107,7 @@ SQLite + audit records | FastAPI AI risk service | SHA-256 documents/IPFS fallba
 
 The Solidity MunicipalLedger contract is included and tested through Hardhat. The running local website remains usable without a blockchain node by writing clearly marked LOCAL-DEV-PROOF references. These are development proof IDs, not public-blockchain transaction hashes. Connect a deployed contract using an Ethers adapter before claiming on-chain production verification.
 
-Document upload uses SHA-256 integrity checks and local fallback storage. IPFS CID fields are ready for a configured IPFS provider but the demo does not pretend local files are already stored on a public IPFS network.
+Document upload uses SHA-256 integrity checks and local fallback storage. IPFS CID fields are ready for a configured IPFS provider; local files are never represented as public IPFS records.
 
 ## Included modules
 
@@ -117,8 +117,8 @@ Document upload uses SHA-256 integrity checks and local fallback storage. IPFS C
 - SHA-256 document storage and tamper verification (local fallback; metadata is ready for IPFS CID)
 - FastAPI + genuine Isolation Forest risk endpoint
 - Solidity `MunicipalLedger` contract for compact immutable event proofs
-- Demo seed data for Warangal, Hanamkonda, Kazipet and Narsampet projects: contractor, tender, work-order, material, quality and public-contact records
-- Five complete public project dossiers with 100 approved payments and unique proof IDs per project
+- 12 seeded work packages across Warangal, Hanamkonda, Kazipet and Narsampet with contractor, tender, work-order, material, quality and public-contact records
+- 12 public project dossiers with 100 approved payments and unique ledger evidence IDs per project
 - GitHub Actions, Nginx, PM2 and systemd deployment examples (no Docker)
 
 ## Quick start in VS Code
@@ -142,23 +142,23 @@ pip install -r ai-service\requirements.txt
 uvicorn main:app --app-dir ai-service --reload
 ```
 
-Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). For local Vite development, set `VITE_API_URL=http://localhost:4000/api` in `frontend/.env.local`. Production is a single Express site, so it uses `/api` automatically. Demo password for every account is `Fund@1234`:
+Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). The first screen is the secure role login. For local Vite development, set `VITE_API_URL=http://localhost:4000/api` in `frontend/.env.local`. Production is a single Express site, so it uses `/api` automatically:
 
-| Role | Email |
-| --- | --- |
-| Admin | admin@gmail.com |
-| Municipal Officer | municipalofficer@gmail.com |
-| Auditor | auditor@gmail.com |
-| Citizen | citizen@gmail.com |
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | admin@gmail.com | admin@1234 |
+| Municipal Officer | municipalofficer@gmail.com | municipal@1234 |
+| Auditor | auditor@gmail.com | auditor@1234 |
+| Citizen | citizen@gmail.com | citizen@1234 |
 
 ## Public website routes
 
 | Area | Local route |
 | --- | --- |
-| Public works directory | http://127.0.0.1:5173/#/ |
+| Secure role login | http://127.0.0.1:5173/#/login |
+| Public works directory | http://127.0.0.1:5173/#/public |
 | Visual works locator | http://127.0.0.1:5173/#/works-map |
 | Platform and team | http://127.0.0.1:5173/#/about |
-| Staff login | http://127.0.0.1:5173/#/login |
 | Admin control tower | http://127.0.0.1:5173/#/dashboard/overview |
 
 Each public dossier includes project identity, sanctioned/released/used funds, construction progress, milestone tracker, Google Maps worksite link, contractor and tender details, material quantities, quality status, 100 payment rows, printable disclosure and citizen feedback.
@@ -192,7 +192,7 @@ The API currently always remains usable with a clearly labelled `LOCAL-*` immuta
 - `GET /api/dashboard`, `/api/alerts`, `/api/audit`, `/api/blockchain/verify/:hash`
 - `POST /api/feedback`
 
-Protected requests use `Authorization: Bearer <JWT>`. Public registration creates **citizen** accounts only; an admin provisions staff roles. Admin can create/allocate/approve; officers submit spending only for assigned projects; auditors have audit/verification access. The SQLite schema is created automatically at API start.
+Protected requests use `Authorization: Bearer <JWT>`. Public registration creates **citizen** accounts only; an admin provisions staff roles. Admin creates projects and releases funds; the Municipal Officer records and approves/rejects expenditure; auditors have audit, material and verification access. The SQLite schema is created automatically at API start.
 
 ### Useful API calls during development
 
