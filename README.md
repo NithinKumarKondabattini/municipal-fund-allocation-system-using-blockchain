@@ -131,14 +131,14 @@ pip install -r ai-service\requirements.txt
 uvicorn main:app --app-dir ai-service --reload
 ```
 
-Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). For local Vite development, set `VITE_API_URL=http://localhost:4000/api` in `frontend/.env.local`. Production is a single Express site, so it uses `/api` automatically. Demo password for every account is `Demo@123`:
+Visit the Vite URL shown in terminal 2 (normally `http://localhost:5173`). For local Vite development, set `VITE_API_URL=http://localhost:4000/api` in `frontend/.env.local`. Production is a single Express site, so it uses `/api` automatically. Demo password for every account is `Fund@1234`:
 
 | Role | Email |
 | --- | --- |
-| Admin | admin@municipal.gov.in |
-| Officer | officer@municipal.gov.in |
-| Auditor | auditor@municipal.gov.in |
-| Citizen | citizen@example.com |
+| Admin | admin@gmail.com |
+| Municipal Officer | municipalofficer@gmail.com |
+| Auditor | auditor@gmail.com |
+| Citizen | citizen@gmail.com |
 
 ## Public website routes
 
