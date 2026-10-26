@@ -22,7 +22,12 @@ jobs:
         with: {node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json}
       - run: npm ci --prefix frontend
       - run: npm run build --prefix frontend
-        env: {VITE_STATIC_DEMO: 'true'}
+        env:
+          # With no hosted API, Pages remains a complete read-only public demo.
+          # Set repository variable PUBLIC_API_URL to https://your-service/api
+          # to turn Pages into a live frontend for the hosted Express API.
+          VITE_API_URL: ${{ vars.PUBLIC_API_URL }}
+          VITE_STATIC_DEMO: ${{ vars.PUBLIC_API_URL == '' && 'true' || 'false' }}
       - uses: actions/configure-pages@v5
         with: {enablement: true}
       - uses: actions/upload-pages-artifact@v3

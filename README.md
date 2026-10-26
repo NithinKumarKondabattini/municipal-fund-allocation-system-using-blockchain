@@ -62,6 +62,17 @@ Every seeded public project record includes:
 
 Role enforcement is implemented in the Express API using JWT authentication and server-side role checks. The public portal does not expose staff-only endpoints.
 
+### Role-specific workspace behavior
+
+| Account | Workspace behavior |
+| --- | --- |
+| **Admin** | Creates municipal projects, assigns a Municipal Officer, releases project funds, approves or rejects expenditure requests, manages roles, resolves alerts and runs reports. |
+| **Municipal Officer** | Sees only assigned work packages and their financial records, updates physical work progress, submits expenditure with vendor and invoice-purpose details, then tracks approval status. |
+| **Auditor** | Reviews approved expenditure, risk levels, document-hash status, audit events, alert evidence and local proof references without changing municipal funds. |
+| **Citizen** | Reads the public work register, construction progress, contractor and material records, approved payment ledger, proof references and notifications. |
+
+The seeded local database includes five assigned projects, 500 approved expenditure records, three pending officer requests and three open review alerts so every workspace has meaningful records on first run.
+
 ## Demo data and project records
 
 The seed script creates five detailed Greater Warangal municipal work packages:
@@ -230,3 +241,11 @@ The GitHub Pages workflow publishes the static public interface after every push
 https://nithinkumarkondabattini.github.io/municipal-fund-allocation-system-using-blockchain/
 
 GitHub Pages cannot run Node.js, Python, SQLite, IPFS or Hardhat services. The public static build is useful for showing the interface; use Render, a VPS with PM2/Nginx, or another Node-capable host for the complete live API, AI, documents and staff workflows.
+
+### Deploy the complete API-backed system
+
+The repository includes render.yaml for a combined Express API and React site deployment. From the Render dashboard select **New → Blueprint**, connect this GitHub repository and allow Render to use render.yaml. Render will build the frontend, seed the SQLite demonstration database and start the API at /api/health.
+
+After Render gives the service a URL, open the deployed service URL directly for the complete system. To point the GitHub Pages frontend at that API, add a GitHub repository variable named PUBLIC_API_URL with the Render URL followed by /api, then redeploy the Pages workflow. This keeps GitHub Pages as the frontend while Render runs the authenticated API.
+
+For a production installation, replace ephemeral SQLite storage with Render Postgres or a persistent disk and store uploads in object storage.
