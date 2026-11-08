@@ -71,11 +71,11 @@ Role enforcement is implemented in the Express API using JWT authentication and 
 | **Auditor** | Reviews approved expenditure, risk levels, document hashes, audit events, material quantities, unit rates, quality status, alerts and ledger references without changing municipal funds. |
 | **Citizen** | Reads the public work register, construction progress, contractor and material records, approved payment ledger, proof references and notifications. |
 
-The seeded database includes 12 municipal work packages, 12 principal contractors, 36 material schedules, 1,200 approved expenditure records, three pending review requests and three open compliance alerts so every workspace has meaningful records on first run.
+The seeded database includes 24 municipal work packages, 24 principal contractors, 72 material schedules, 2,400 approved expenditure records, three pending review requests and three open compliance alerts so every workspace has meaningful records on first run.
 
 ## Initial municipal register
 
-The seed script creates 12 detailed Greater Warangal municipal work packages. The first five are:
+The seed script creates 24 detailed Greater Warangal municipal work packages. The first five are:
 
 | Project code | Work package | Delivery partner | Transactions |
 | --- | --- | --- | ---: |
@@ -85,7 +85,7 @@ The seed script creates 12 detailed Greater Warangal municipal work packages. Th
 | MUN-2026-0004 | Public Park & Open Space Renewal | Greenfield Urban Spaces Pvt. Ltd. | 100 |
 | MUN-2026-0005 | Narsampet Drainage Resilience Works | Kakatiya Civil Engineering Co. | 100 |
 
-Each record also has three construction-material entries, procurement information and a unique SHA-256 ledger evidence ID. There are **1,200 approved transactions** in total.
+Each record also has three construction-material entries, procurement information and a unique SHA-256 ledger evidence ID. There are **2,400 approved transactions** in total.
 
 ## Architecture
 
@@ -115,10 +115,12 @@ Document upload uses SHA-256 integrity checks and local fallback storage. IPFS C
 - Express API with JWT, bcrypt, role checks, validation, Helmet, rate limiting, SQLite persistence and audit logs
 - Admin allocation/approval workflow, officer expenditure submission and citizen feedback
 - SHA-256 document storage and tamper verification (local fallback; metadata is ready for IPFS CID)
+- SHA-256 document verification workspace: upload a financial PDF/image, record its 256-bit hash, then upload a copy to compare hashes and identify a mismatch
+- Optional Supabase Storage mirror and `municipal_documents` metadata sync, with all secrets retained in the backend environment
 - FastAPI + genuine Isolation Forest risk endpoint
 - Solidity `MunicipalLedger` contract for compact immutable event proofs
-- 12 seeded work packages across Warangal, Hanamkonda, Kazipet and Narsampet with contractor, tender, work-order, material, quality and public-contact records
-- 12 public project dossiers with 100 approved payments and unique ledger evidence IDs per project
+- 24 seeded work packages across Warangal, Hanamkonda, Kazipet and Narsampet with contractor, tender, work-order, material, quality and public-contact records
+- 24 public project dossiers with 100 approved payments and unique ledger evidence IDs per project
 - GitHub Actions, Nginx, PM2 and systemd deployment examples (no Docker)
 
 ## Quick start in VS Code
@@ -188,7 +190,7 @@ The API currently always remains usable with a clearly labelled `LOCAL-*` immuta
 - `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
 - `GET|POST /api/projects`; `POST /api/projects/:id/allocate`
 - `GET|POST /api/transactions`; `PATCH /api/transactions/:id/decision`
-- `POST /api/documents`; `POST /api/documents/:id/verify`
+- `POST /api/documents`; `GET /api/documents`; `POST /api/documents/:id/verify`; `GET /api/documents/:id/download`
 - `GET /api/dashboard`, `/api/alerts`, `/api/audit`, `/api/blockchain/verify/:hash`
 - `POST /api/feedback`
 
@@ -206,6 +208,32 @@ Protected requests use `Authorization: Bearer <JWT>`. Public registration create
 | GET /api/transactions | Authenticated transaction list. |
 | GET /api/audit | Protected audit events. |
 | GET /api/blockchain/verify/:hash | Verify a stored proof reference. |
+
+## SHA-256 document verification
+
+The Auditor workspace includes a **Document evidence** page for municipal financial records. The process is:
+
+1. Upload a PDF or image (maximum 5 MB).
+2. CivicLedger computes and stores the SHA-256 hash with file name, size, storage provider and audit event.
+3. Upload the document again to compare its newly computed hash with the stored hash.
+4. **VERIFIED** means the hashes match; **TAMPERED** means they differ and should be reviewed.
+
+SHA-256 verifies that the file bytes have not changed. It does not identify who uploaded the document or confirm that its financial contents are accurate.
+
+### Published financial evidence
+
+The following Greater Warangal financial records are bundled with the GitHub Pages portal and registered in the local Auditor workspace. The published hash lets an auditor download a record and compare the exact file bytes in the **Document evidence** page.
+
+| Record | Pages | SHA-256 |
+| --- | ---: | --- |
+| Warangal Trial Balance Report | 29 | `7719AC7EBA5B7801943CB329BD30158FAB2D977F4403169F7F245D6F8C0312DD` |
+| Income and Expenditure, 2024–25 | 1 | `5C6DE22E2C8917CEFA0134BA697663135C1A6A88684854BB43582E9CBB59CCA2` |
+| Balance Sheet Schedule | 5 | `A9E7154CD38E436E87F2259421C1EB5FF54CA54B892F308B4E7186A80749C422` |
+| Balance Sheet | 1 | `4DEC4A8C3900D341D902F54B8C7F43DC917ACA09D173E8A8E49B5CEB9D1DD469` |
+
+### Optional Supabase connection
+
+Local storage works by default. To mirror documents to Supabase Storage, create a private bucket called `municipal-documents`, run [docs/supabase.sql](docs/supabase.sql) in Supabase SQL Editor, then set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`. Never place the service-role key in the frontend or commit it to Git.
 
 ## Tests and build
 

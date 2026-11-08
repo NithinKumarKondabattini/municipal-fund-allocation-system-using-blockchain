@@ -1,0 +1,15 @@
+/* Civic government identity: service blue, saffron, white and India green. */
+.admin-shell{background:linear-gradient(180deg,#f7f9fc 0,#fff 60%,#f7fbf8 100%)}
+.admin-topbar{border-top:4px solid #ff9933!important}
+.admin-sidebar{border-bottom:4px solid #138808}
+.brand-mark{background:linear-gradient(135deg,#ff9933 0 34%,#fff 34% 66%,#138808 66%)}
+.admin-content .workspace-hero{border-left-color:#ff9933!important;border-bottom:2px solid #138808!important}
+.admin-content .workspace-stamp b{color:#138808!important}
+.verify-file{display:inline-flex!important;align-items:center;gap:7px!important;margin:8px 8px 0 0!important;padding:7px 9px!important;border:1px dashed #7da88a!important;border-radius:5px!important;background:#f4fbf5!important;color:#17683a!important;font-size:11px!important;cursor:pointer}
+.verify-file input{max-width:152px;font-size:10px}
+.portfolio-row>div:last-child{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap}
+.portfolio-row>div:last-child button{padding:8px 10px;font-size:11px}
+.portfolio-row .map-link{font-size:11px;white-space:nowrap}
+.project-form input[type=file]{padding:9px;background:#f8fbff;border:1px solid #cad8e8;border-radius:5px}
+.project-form input[type=file]::file-selector-button{background:#0f5f9f;color:#fff;border:0;border-radius:4px;padding:6px 9px;margin-right:10px;font-weight:700}
+.status-tampered{background:#fde9e7;color:#a2231d}.status-verified{background:#e7f5e9;color:#137333}
