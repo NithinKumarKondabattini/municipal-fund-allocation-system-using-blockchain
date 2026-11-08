@@ -55,9 +55,9 @@ Every seeded public project record includes:
 
 | Role | Main permissions |
 | --- | --- |
-| **Admin** | Project setup, fund allocation, user administration, alerts, reports and audit oversight. |
+| **Admin** | Create and archive public projects, allocate funds, administer users, resolve alerts, reports and audit oversight. |
 | **Municipal Officer** | View assigned projects, submit expenditure records, and approve or reject fund requests. |
-| **Auditor** | Review audit events, document hashes, material quantities, unit rates, proof references, alerts and reports. |
+| **Auditor** | Create and amend pending audit transactions, upload and hash documents, and review audit events, material quantities, proof references, alerts and reports. |
 | **Citizen** | Browse published work records and send project feedback. |
 
 Role enforcement is implemented in the Express API using JWT authentication and server-side role checks. The public portal does not expose staff-only endpoints.
@@ -66,9 +66,9 @@ Role enforcement is implemented in the Express API using JWT authentication and 
 
 | Account | Workspace behavior |
 | --- | --- |
-| **Admin** | Creates municipal projects, assigns a Municipal Officer, releases project funds, manages roles, resolves alerts and runs reports. |
+| **Admin** | Creates projects, assigns a Municipal Officer, releases project funds, manages roles, resolves alerts, runs reports and archives works from the public register while retaining statutory evidence. |
 | **Municipal Officer** | Sees assigned work packages, updates physical work progress, submits expenditure with vendor and invoice-purpose details, and approves or rejects requests from the fund approval queue. |
-| **Auditor** | Reviews approved expenditure, risk levels, document hashes, audit events, material quantities, unit rates, quality status, alerts and ledger references without changing municipal funds. |
+| **Auditor** | Records new pending audit transactions and amends pending entries before approval; uploads evidence with an automatic SHA-256 fingerprint; reviews approved immutable expenditure, risks, materials, documents and audit events. |
 | **Citizen** | Reads the public work register, construction progress, contractor and material records, approved payment ledger, proof references and notifications. |
 
 The seeded database includes 24 municipal work packages, 24 principal contractors, 72 material schedules, 2,400 approved expenditure records, three pending review requests and three open compliance alerts so every workspace has meaningful records on first run.
@@ -113,9 +113,9 @@ Document upload uses SHA-256 integrity checks and local fallback storage. IPFS C
 
 - React/Vite public transparency portal, project dossiers, works locator and staff dashboard
 - Express API with JWT, bcrypt, role checks, validation, Helmet, rate limiting, SQLite persistence and audit logs
-- Admin allocation/approval workflow, officer expenditure submission and citizen feedback
+- Admin creation/archive and fund-allocation workflow, officer expenditure submission, auditor controlled pending-transaction workflow and citizen feedback
 - SHA-256 document storage and tamper verification (local fallback; metadata is ready for IPFS CID)
-- SHA-256 document verification workspace: upload a financial PDF/image, record its 256-bit hash, then upload a copy to compare hashes and identify a mismatch
+- SHA-256 document verification workspace: hashes a PDF/image immediately on selection, independently verifies it again on server upload, then compares a later copy to identify a mismatch
 - Optional Supabase Storage mirror and `municipal_documents` metadata sync, with all secrets retained in the backend environment
 - FastAPI + genuine Isolation Forest risk endpoint
 - Solidity `MunicipalLedger` contract for compact immutable event proofs
@@ -194,7 +194,7 @@ The API currently always remains usable with a clearly labelled `LOCAL-*` immuta
 - `GET /api/dashboard`, `/api/alerts`, `/api/audit`, `/api/blockchain/verify/:hash`
 - `POST /api/feedback`
 
-Protected requests use `Authorization: Bearer <JWT>`. Public registration creates **citizen** accounts only; an admin provisions staff roles. Admin creates projects and releases funds; the Municipal Officer records and approves/rejects expenditure; auditors have audit, material and verification access. The SQLite schema is created automatically at API start.
+Protected requests use `Authorization: Bearer <JWT>`. Public registration creates **citizen** accounts only; an admin provisions staff roles. Admins create/archive projects and release funds; the Municipal Officer records and approves/rejects expenditure; auditors create or amend only **pending** audit transactions and upload/verify evidence. Approved financial records remain immutable. The SQLite schema is created automatically at API start.
 
 ### Useful API calls during development
 
@@ -213,8 +213,8 @@ Protected requests use `Authorization: Bearer <JWT>`. Public registration create
 
 The Auditor workspace includes a **Document evidence** page for municipal financial records. The process is:
 
-1. Upload a PDF or image (maximum 5 MB).
-2. CivicLedger computes and stores the SHA-256 hash with file name, size, storage provider and audit event.
+1. Select a PDF or image (maximum 5 MB); CivicLedger immediately displays a browser-generated SHA-256 fingerprint.
+2. Submit the record; the backend recomputes and stores the SHA-256 hash with file name, size, storage provider and audit event.
 3. Upload the document again to compare its newly computed hash with the stored hash.
 4. **VERIFIED** means the hashes match; **TAMPERED** means they differ and should be reviewed.
 
